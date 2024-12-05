@@ -5,22 +5,10 @@ Created on Wed Apr 17 09:47:48 2024
 @author: ekruisdijk
 """
 
-import numpy as np
 from matplotlib import pyplot as plt
-import scipy
-from pylab import *
 import pandas as pd
 import matplotlib as mpl
-from matplotlib.offsetbox import AnchoredText
-import datetime
-import functools
 import matplotlib.patches as patches
-from matplotlib import cm
-from numpy import linspace
-import matplotlib.lines as mlines
-from matplotlib.patches import Rectangle
-import scipy.optimize as optimization
-from matplotlib import ticker
 from matplotlib.ticker import MaxNLocator
 ########################################################################
 #STYLE
