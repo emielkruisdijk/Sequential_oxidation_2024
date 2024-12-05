@@ -1,0 +1,129 @@
+#LIM8-2
+#Time-unites; seconds
+#Lengt_units: cm
+#Concentration: mmol/kgw
+
+DATABASE wateq4f_updated v3.dat
+
+SOLUTION_SPECIES
+
+H2O + 0.01e- = H2O - 0.01  # Adding this species generates some redox bufHfoing (for program convergence)
+log_k -9
+
+TITLE Lim8-2
+
+SOLUTION 0 
+temp 		11.0
+pH 		8.08
+-units mmol/kgw
+O(0) 		0.631875
+Fe_di 		0
+Mn_di		0.000131967
+Alkalinity 		4.917 as HCO3	
+Amm		0.076
+Nitrate		0.070
+Nitrite		0.00
+
+
+SELECTED_OUTPUT
+	-file  Lim8-2.txt
+	-reset false
+	-state true
+	-distance true
+	-time true
+	-new_line true
+	-simulation true
+	-step true
+	-high_precision true
+	-solution true
+	
+USER_PUNCH
+-headings Seconds _pH Fe_di Fe_tri O2 H+ actH+ Amm NO3 Mn_di Mn_tri Alkalinity NO2
+-start
+1 PUNCH    total_time		#seconds
+2 PUNCH    -la("H+")		#pH
+#Ions
+3 PUNCH    tot("Fe_di")
+4 PUNCH    tot("Fe_tri")
+5 PUNCH    mol("O2")
+6 PUNCH    mol("H+")
+7 PUNCH    ACT("H+")
+8 PUNCH    tot("Amm")
+9 PUNCH    tot("Nitrate")
+10 PUNCH   tot("Mn_di")
+11 PUNCH   tot("Mn_tri")
+12 PUNCH   tot("Alkalinity")
+13 PUNCH   tot("Nitrite")
+-end
+
+
+SAVE solution 0
+
+END
+
+USE solution 0
+
+SOLUTION 1-195
+temp 		11.0
+pH 		8.08
+-units mmol/kgw
+O(0) 		0.0
+Fe_di 		0
+Mn_di		0.000131967
+Alkalinity 		4.917 as HCO3	
+Amm		0.076 
+Nitrate		0.070
+Nitrite		0.00
+
+
+RATES
+Amm_ox
+10  Fe_di = tot("Fe_di")
+15  NH4 = tot("Amm")
+20  O2 = mol("O2")
+40  if (O2 <= 0) then goto 200
+50  if (NH4 <= 0) then goto 200
+60  rate = parm(1)*NH4
+70  moles = rate*time
+80  if (moles > NH4) then moles = NH4
+85  if (moles > 2*O2) then moles = O2/2
+86  rate = moles/time
+90  put(rate,20)
+95  put(moles, 200)
+200 SAVE moles
+-end
+
+Mn_di_hetero #Davies and Morgan, 1989
+-start
+5 Mn_di = MOL("Mn_di+2")
+10 if (Mn_di <= 0) then goto 100
+20 Mn_di_ads =  parm(1)
+30 p_o2 = 10^(SI("O2(g)"))
+40 rate = parm(2) * Mn_di_ads * p_o2
+50 moles = rate * time
+60 put(rate,5)
+70 if (moles > Mn_di) then moles = Mn_di
+75 put(moles, 50)
+100 save moles
+-end
+
+
+KINETICS 1-195
+Amm_ox
+-formula Amm -1.0 O2 -2.0 Nitrate 1.0 H2O 1.0 H 2.0 
+-parms 6.814000E-03 
+
+Mn_di_hetero
+-formula Mn_di -1.0 O2 -0.5 H2O -1 Mn_qO2 1.0 H 2.0
+-parms 0 2.4e-4 
+
+TRANSPORT
+-cells 195  
+-lengths 1 
+-shifts 195
+-dispersivities 0.00000001
+-diffusion_coefficient 0.00000001
+-time_step 2.4
+-flow_direction forward
+END
+
